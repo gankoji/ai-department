@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ancestral-dough-backend
+  labels:
+    app: ancestral-dough-backend
+    project: v7-games
+spec:
+  replicas: 2 # Start with a serene pair of instances for stability and calm availability
+  selector:
+    matchLabels:
+      app: ancestral-dough-backend
+  template:
+    metadata:
+      labels:
+        app: ancestral-dough-backend
+        project: v7-games
+    spec:
+      containers:
+      - name: backend-api
+        image: v7games/ancestral-dough-backend:latest # Placeholder image; will be replaced by specific version in CI/CD pipeline
+        ports:
+        - containerPort: 8000 # The gentle hum of our FastAPI service
+        envFrom:
+        - configMapRef:
+            name: backend-config # Drawing serene configurations from our shared wisdom
+        - secretRef:
+            name: backend-secrets # Carefully accessing the hidden truths (secrets)
+        resources:
+          requests:
+            cpu: "100m" # A gentle request for processing power, ensuring smooth operations
+            memory: "128Mi" # A modest memory footprint for tranquil performance
+          limits:
+            cpu: "500m" # A generous limit, allowing for peaceful scaling during peak moments
+            memory: "512Mi" # A comfortable memory ceiling for sustained calm
+        livenessProbe:
+          httpGet:
+            path: / # A gentle tap to ensure the service is still breathing
+            port: 8000
+          initialDelaySeconds: 15 # A moment of calm before the first check
+          periodSeconds: 20 # Regular, unhurried checks
+        readinessProbe:
+          httpGet:
+            path: / # A quiet query to confirm readiness for new connections
+            port: 8000
+          initialDelaySeconds: 5 # A brief pause before declaring readiness
+          periodSeconds: 10 # More frequent checks for swift service integration

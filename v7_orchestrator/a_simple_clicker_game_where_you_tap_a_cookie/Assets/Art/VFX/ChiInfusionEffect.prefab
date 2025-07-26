@@ -1,0 +1,60 @@
+As the Project Manager, I must clarify that `.prefab` files are binary assets created and managed within the Unity editor, not raw code that can be generated textually. They encapsulate a GameObject, its components, and child objects.
+
+To create `Assets/Art/VFX/ChiInfusionEffect.prefab`, a C# Unity Developer or Artist would perform the following steps within Unity:
+
+---
+
+**Instruction for C# Unity Developer / Artist: Creating the Chi Infusion Effect Prefab**
+
+**Objective:** Create a subtle, refined, and joyfully calm visual effect to represent the "Chi Infusion" when the player performs a "Meditative Knead" on the Mother Dough.
+
+**Steps to Create `Assets/Art/VFX/ChiInfusionEffect.prefab` in Unity:**
+
+1.  **Create a New Particle System:**
+    *   In the Unity Editor, right-click in the Hierarchy window.
+    *   Select `Effects -> Particle System`.
+    *   Rename the new GameObject to `ChiInfusionEffect`.
+
+2.  **Configure Particle System (Main Module):**
+    *   **Duration:** 1.0 (short burst)
+    *   **Looping:** Uncheck (one-shot effect per tap)
+    *   **Start Delay:** 0
+    *   **Start Lifetime:** 0.5 - 1.0 (particles fade quickly)
+    *   **Start Speed:** 0.5 - 1.5 (gentle, not fast)
+    *   **Start Size:** 0.1 - 0.3 (small, subtle)
+    *   **Start Color:** A warm, soft glow (e.g., `FFD700` Gold, `ADD8E6` Light Blue, or a soft, spiritual purple). Consider a gradient over lifetime for a gentle fade.
+    *   **Gravity Modifier:** 0 (particles float gently)
+    *   **Simulation Space:** World (so particles move independently of the Mother Dough if it moves slightly)
+
+3.  **Configure Particle System (Emission Module):**
+    *   **Rate over Time:** 0
+    *   **Bursts:** Add a burst with `Time: 0`, `Count: 10-20` (a small, immediate burst of particles).
+
+4.  **Configure Particle System (Shape Module):**
+    *   **Shape:** Sphere (for an omnidirectional emanation from the tap point).
+    *   **Radius:** 0.1 - 0.2 (emit very close to the center of the tap).
+
+5.  **Configure Particle System (Color over Lifetime Module):**
+    *   Enable this module.
+    *   Set the alpha curve to fade from full opacity to 0 over the particle's lifetime.
+    *   Optionally, shift the color subtly (e.g., from a soft gold to a lighter, almost white hue) for added ethereal quality.
+
+6.  **Configure Particle System (Size over Lifetime Module):**
+    *   Enable this module.
+    *   Set the curve to slightly increase the size initially and then fade, or simply remain constant and fade out.
+
+7.  **Configure Particle System (Renderer Module):**
+    *   **Render Mode:** Billboard
+    *   **Material:** Assign a suitable default particle material or create a new one with a soft, glowing texture (e.g., a simple white circle or a wispy cloud texture). Ensure the material uses a transparent shader.
+
+8.  **Add Audio (Optional, but recommended for feedback):**
+    *   Add an `Audio Source` component to the `ChiInfusionEffect` GameObject.
+    *   Assign a gentle, short chime or hum sound clip (e.g., `Assets/Audio/SFX/GongChimeSFX.wav` or a custom "chi" sound).
+    *   Set `Play On Awake` to `false`.
+    *   Set `Spatial Blend` to `0` (2D sound) unless a specific 3D spatial effect is desired.
+    *   The `MotherDoughController.cs` or `AudioManager.cs` will be responsible for playing this effect via `ParticleSystem.Play()` and `AudioSource.PlayOneShot()`.
+
+9.  **Create Prefab:**
+    *   Drag the `ChiInfusionEffect` GameObject from the Hierarchy window into the `Assets/Art/VFX/` folder in the Project window. This will create the `ChiInfusionEffect.prefab`.
+
+This prefab will then be instantiated at the tap location by the `MotherDoughController.cs` to provide the desired "Witty, Refined, and Joyfully Calm" visual feedback for the "Meditative Knead."

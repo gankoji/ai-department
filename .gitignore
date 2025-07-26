@@ -1,0 +1,16 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+*__pycache__/
+*.py[cod]
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+# If your project uses a virtual environment, you might want to ignore it   
+.env
+*pyvenv.cfg
+*bin/
+*include/
+*lib/
+*lib64/

@@ -1,0 +1,257 @@
+// Assets/Scripts/Gameplay/MotherDoughController.cs
+
+using UnityEngine;
+using System.Collections;
+using V7Games.Enums; // For DoughEnums
+using V7Games.ScriptableObjects; // For DoughFormConfig
+using V7Games.Managers; // For AudioManager, UIManager, etc.
+
+namespace V7Games.Gameplay
+{
+    /// <summary>
+    /// Manages the core logic and visual representation of the Ancestral Mother Dough.
+    /// This script is the primary component attached to the `MotherDoughPrefab`.
+    /// It orchestrates the dough's spiritual harmony, essence generation,
+    /// form evolution, and the yielding of Wisdom Cookies.
+    /// </summary>
+    public class MotherDoughController : MonoBehaviour
+    {
+        [Header("Dough Configuration")]
+        [Tooltip("References to ScriptableObjects defining each Dough Form's properties.")]
+        [SerializeField] private DoughFormConfig[] doughForms;
+        [Tooltip("The MeshRenderer component responsible for displaying the dough's visual form.")]
+        [SerializeField] private MeshRenderer doughMeshRenderer;
+        [Tooltip("The ParticleSystem that plays when Chi is infused into the dough (e.g., on tap).")]
+        [SerializeField] private ParticleSystem chiInfusionParticles;
+        [Tooltip("The Collider component used to detect player taps on the dough.")]
+        [SerializeField] private Collider doughCollider;
+
+        [Header("Progression Values")]
+        [Tooltip("The current spiritual harmony level of the Mother Dough. Increases with mindful interaction.")]
+        private float currentSpiritualHarmony;
+        [Tooltip("The accumulated Dough Essence, used to unlock Dojo Enhancements.")]
+        private float currentDoughEssence;
+        [Tooltip("The index of the current Dough Form in the doughForms array.")]
+        private int currentDoughFormIndex = 0;
+
+        [Header("Harmony & Essence Generation Rates")]
+        [Tooltip("The amount of Spiritual Harmony gained with each mindful tap.")]
+        [SerializeField] private float tapHarmonyGain = 1.0f;
+        [Tooltip("The amount of Dough Essence gained with each mindful tap.")]
+        [SerializeField] private float tapEssenceGain = 0.1f;
+        [Tooltip("The passive rate at which Spiritual Harmony increases per second (idle gain).")]
+        [SerializeField] private float idleHarmonyPerSecond = 0.05f;
+        [Tooltip("The passive rate at which Dough Essence increases per second (idle gain).")]
+        [SerializeField] private float idleEssencePerSecond = 0.01f;
+
+        [Header("Wisdom Cookie Generation")]
+        [Tooltip("The amount of Harmony needed to generate a new Wisdom Cookie.")]
+        [SerializeField] private float wisdomCookieThreshold = 100.0f;
+        [Tooltip("Harmony accumulated since the last Wisdom Cookie was generated.")]
+        private float harmonySinceLastWisdomCookie = 0.0f;
+
+        // Events for other systems (e.g., UI, GameManager) to subscribe to
+        /// <summary>
+        /// Event fired when Spiritual Harmony or Dough Essence values change.
+        /// Parameters: (currentHarmony, maxHarmonyForCurrentForm).
+        /// </summary>
+        public static event System.Action<float, float> OnHarmonyEssenceChanged;
+        /// <summary>
+        /// Event fired when the Mother Dough evolves to a new form.
+        /// Parameter: (newDoughFormIndex).
+        /// </summary>
+        public static event System.Action<int> OnDoughFormChanged;
+        /// <summary>
+        /// Event fired when a Wisdom Cookie is ready to be revealed.
+        /// </summary>
+        public static event System.Action OnWisdomCookieReady;
+
+        private void Awake()
+        {
+            // Auto-assign components if not set in Inspector (good practice for robustness)
+            if (doughMeshRenderer == null)
+            {
+                doughMeshRenderer = GetComponent<MeshRenderer>();
+            }
+            if (doughCollider == null)
+            {
+                doughCollider = GetComponent<Collider>();
+            }
+            if (chiInfusionParticles == null)
+            {
+                // Assumes particle system is a child of the dough GameObject
+                chiInfusionParticles = GetComponentInChildren<ParticleSystem>();
+            }
+
+            // Initialize or load game state
+            InitializeDoughState();
+        }
+
+        private void Start()
+        {
+            // Apply the initial dough form visually and functionally
+            ApplyDoughForm(currentDoughFormIndex);
+            // Notify UI of initial state
+            OnHarmonyEssenceChanged?.Invoke(currentSpiritualHarmony, GetMaxHarmonyForCurrentForm());
+        }
+
+        private void Update()
+        {
+            // Passive harmony and essence generation over time
+            AddHarmony(idleHarmonyPerSecond * Time.deltaTime);
+            AddEssence(idleEssencePerSecond * Time.deltaTime);
+
+            // Simple tap detection for the dough. In a more complex game,
+            // this would likely be handled by a dedicated InputManager or UI system.
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (doughCollider != null && doughCollider.Raycast(ray, out hit, 100f))
+                {
+                    OnDoughTapped();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes the dough's state, typically on game start or after loading.
+        /// </summary>
+        private void InitializeDoughState()
+        {
+            // In a real scenario, this would load from SaveLoadManager.
+            // For now, it initializes to a default starting state.
+            currentSpiritualHarmony = 0f;
+            currentDoughEssence = 0f;
+            currentDoughFormIndex = 0;
+            harmonySinceLastWisdomCookie = 0f;
+            Debug.Log("Mother Dough initialized.");
+        }
+
+        /// <summary>
+        /// Called when the Mother Dough is mindfully interacted with (tapped/clicked).
+        /// This is the core "Meditative Knead" action.
+        /// </summary>
+        public void OnDoughTapped()
+        {
+            AddHarmony(tapHarmonyGain);
+            AddEssence(tapEssenceGain);
+
+            // Play visual feedback for Chi infusion
+            if (chiInfusionParticles != null)
+            {
+                chiInfusionParticles.Play();
+            }
+            // Play a gentle audio feedback for the tap
+            AudioManager.Instance?.PlaySFX(AudioManager.SFXType.TapSFX);
+
+            // Check if enough harmony has accumulated to yield a Wisdom Cookie
+            if (harmonySinceLastWisdomCookie >= wisdomCookieThreshold)
+            {
+                harmonySinceLastWisdomCookie -= wisdomCookieThreshold; // Reset for next cookie
+                OnWisdomCookieReady?.Invoke(); // Notify systems that a Wisdom Cookie is ready
+                AudioManager.Instance?.PlaySFX(AudioManager.SFXType.GongChimeSFX); // Play a special chime
+                Debug.Log("A Wisdom Cookie is ready to be unveiled!");
+            }
+        }
+
+        /// <summary>
+        /// Increases the Mother Dough's Spiritual Harmony.
+        /// </summary>
+        /// <param name="amount">The amount of harmony to add.</param>
+        private void AddHarmony(float amount)
+        {
+            currentSpiritualHarmony += amount;
+            harmonySinceLastWisdomCookie += amount; // Also contributes to Wisdom Cookie progress
+
+            // Check if the dough is ready to evolve to the next form
+            if (currentDoughFormIndex + 1 < doughForms.Length &&
+                currentSpiritualHarmony >= doughForms[currentDoughFormIndex + 1].requiredHarmony)
+            {
+                currentDoughFormIndex++;
+                ApplyDoughForm(currentDoughFormIndex); // Evolve the dough
+            }
+
+            // Notify UI to update the harmony display
+            OnHarmonyEssenceChanged?.Invoke(currentSpiritualHarmony, GetMaxHarmonyForCurrentForm());
+        }
+
+        /// <summary>
+        /// Increases the Mother Dough's Dough Essence.
+        /// </summary>
+        /// <param name="amount">The amount of essence to add.</param>
+        private void AddEssence(float amount)
+        {
+            currentDoughEssence += amount;
+            // (Optional) Notify UI if essence display is separate or needs frequent updates
+            // OnHarmonyEssenceChanged?.Invoke(currentSpiritualHarmony, currentDoughEssence);
+        }
+
+        /// <summary>
+        /// Applies the visual and functional properties of a specific Dough Form.
+        /// This method is called when the dough evolves or loads a saved state.
+        /// </summary>
+        /// <param name="index">The index of the DoughFormConfig to apply from the `doughForms` array.</param>
+        private void ApplyDoughForm(int index)
+        {
+            if (index >= 0 && index < doughForms.Length)
+            {
+                DoughFormConfig form = doughForms[index];
+                if (doughMeshRenderer != null && form.doughMaterial != null)
+                {
+                    doughMeshRenderer.material = form.doughMaterial;
+                    // Additional visual adjustments could be made here (e.g., scale, shape, lighting)
+                    // For example: transform.localScale = form.doughScale;
+                }
+                // Update passive rates if they are tied to dough forms
+                // idleHarmonyPerSecond = form.idleHarmonyRate;
+                // idleEssencePerSecond = form.idleEssenceRate;
+
+                Debug.Log($"Mother Dough gracefully evolved to: {form.formName} (Form Index: {index})");
+                OnDoughFormChanged?.Invoke(index); // Notify UI to update dough visuals/text
+                AudioManager.Instance?.PlaySFX(AudioManager.SFXType.DoughEvolutionSFX); // Play a serene evolution sound
+            }
+            else
+            {
+                Debug.LogWarning($"Attempted to apply invalid Dough Form index: {index}");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the maximum harmony required for the current dough form to evolve.
+        /// Used for progress bars in the UI.
+        /// </summary>
+        /// <returns>The harmony value needed for the next evolution, or current harmony if at max form.</returns>
+        private float GetMaxHarmonyForCurrentForm()
+        {
+            if (currentDoughFormIndex + 1 < doughForms.Length)
+            {
+                return doughForms[currentDoughFormIndex + 1].requiredHarmony;
+            }
+            // If at the final form, the 'max' is effectively the current harmony, indicating mastery.
+            return currentSpiritualHarmony;
+        }
+
+        // --- Public Getters for Data Access (e.g., for SaveLoadManager, UI) ---
+        public float GetCurrentSpiritualHarmony() => currentSpiritualHarmony;
+        public float GetCurrentDoughEssence() => currentDoughEssence;
+        public int GetCurrentDoughFormIndex() => currentDoughFormIndex;
+        public float GetHarmonySinceLastWisdomCookie() => harmonySinceLastWisdomCookie;
+        public float GetWisdomCookieThreshold() => wisdomCookieThreshold;
+
+        /// <summary>
+        /// Sets the internal state of the Mother Dough, primarily used when loading saved game data.
+        /// </summary>
+        public void SetDoughState(float harmony, float essence, int formIndex, float harmonyForCookie)
+        {
+            currentSpiritualHarmony = harmony;
+            currentDoughEssence = essence;
+            currentDoughFormIndex = formIndex;
+            harmonySinceLastWisdomCookie = harmonyForCookie;
+
+            ApplyDoughForm(currentDoughFormIndex); // Ensure visual state matches loaded data
+            OnHarmonyEssenceChanged?.Invoke(currentSpiritualHarmony, GetMaxHarmonyForCurrentForm()); // Update UI
+            Debug.Log("Mother Dough state loaded.");
+        }
+    }
+}

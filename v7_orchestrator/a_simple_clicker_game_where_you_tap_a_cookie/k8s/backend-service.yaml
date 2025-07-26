@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: v7-backend-service
+  labels:
+    app: v7-backend
+spec:
+  selector:
+    app: v7-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP

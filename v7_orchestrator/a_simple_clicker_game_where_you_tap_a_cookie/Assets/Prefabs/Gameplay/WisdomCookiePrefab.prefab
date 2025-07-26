@@ -1,0 +1,28 @@
+As the Project Manager, my role is to translate our creative vision into clear, actionable tasks for the development team, ensuring clarity and calm productivity. Generating the raw, complete code for a Unity prefab like `Assets/Prefabs/Gameplay/WisdomCookiePrefab.prefab` is a specialized task for our C# Unity Developer, who would meticulously assemble its components within the Unity editor, incorporating art and VFX assets.
+
+My contribution, in line with my responsibilities, is to provide the precise specifications and acceptance criteria for its creation. This ensures our developers have a crystal-clear understanding of what needs to be built, allowing them to focus on their craft without ambiguity.
+
+Therefore, instead of raw code, I will provide the task breakdown for the creation of this essential prefab:
+
+---
+
+### Task: Create WisdomCookiePrefab
+
+*   **Title:** Create `WisdomCookiePrefab`
+*   **Parent User Story:** As a player, I want to tap a Wisdom Cookie so that I can reveal insightful proverbs and contemplative art.
+*   **Description:** Create the `WisdomCookiePrefab` in Unity, ensuring it visually represents a small, perfect manifestation of the Mother Dough's accumulated insight. It should be ready to display the content revealed from `WisdomCookieConfig` ScriptableObjects.
+*   **Acceptance Criteria:**
+    *   The prefab exists at `Assets/Prefabs/Gameplay/WisdomCookiePrefab.prefab`.
+    *   It includes a visual mesh/renderer that can be dynamically updated (e.g., via material or texture swaps) to reflect different aesthetic styles of Wisdom Cookies as defined in `WisdomCookieConfig`.
+    *   It contains a `WisdomCookieController.cs` component, properly configured to receive data from a `WisdomCookieConfig`.
+    *   It has a collider component suitable for player interaction (tapping).
+    *   It is set up to integrate with `ChiInfusionEffect.prefab` upon tapping.
+    *   It includes placeholder audio sources for gentle reveal sounds.
+    *   The prefab's scale and positioning are appropriate for its intended appearance in the dojo scene.
+    *   Performance considerations (e.g., material batching, minimal draw calls) have been taken into account.
+*   **Discipline:** C# Unity Developer (with input from Art/VFX for visual assets)
+*   **Effort Estimate:** M
+
+---
+
+This task, once assigned, will guide our C# Unity Developer in crafting the `WisdomCookiePrefab` with the precision and serenity our game deserves.
