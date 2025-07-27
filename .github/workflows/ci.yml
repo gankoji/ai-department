@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+      - name: Lint
+        run: |
+          echo "TODO: flake8 / mypy"
+      - name: Unit tests
+        run: |
+          echo "TODO: pytest"
+      - name: Build container
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/fsm-orchestrator:${{ github.sha }} .
+      - name: Push (placeholder)
+        run: |
+          echo "TODO: docker login & push"
+      - name: Helm lint
+        run: helm lint infra/helm

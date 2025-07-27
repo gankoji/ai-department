@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fsm-orchestrator.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "fsm-orchestrator.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "fsm-orchestrator.name" . }}
+    spec:
+      containers:
+        - name: orchestrator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: PG_URI
+              value: {{ .Values.env.PG_URI | quote }}
+            - name: VAULT_ADDR
+              value: {{ .Values.env.VAULT_ADDR | quote }}
+          ports:
+            - containerPort: 8000

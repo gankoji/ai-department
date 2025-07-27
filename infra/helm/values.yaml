@@ -1,0 +1,14 @@
+replicaCount: 1   # TODO: bump when HA required
+
+image:
+  repository: ghcr.io/<ORG>/fsm-orchestrator
+  tag: "dev"    # set by CI
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: ""
+
+env:
+  PG_URI: "postgresql://fsm:changeme@postgres:5432/fsm"
+  VAULT_ADDR: "http://vault:8200"
